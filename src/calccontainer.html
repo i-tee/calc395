@@ -1,0 +1,66 @@
+<br>
+<div class="text-center hide-print">
+    <h1>Калькулятор процентов по 395 ГК РФ</h1>
+    <h2>Онлайн расчет процентов по правилам 395 статьи ГК РФ</h2>
+</div>
+<div id="teeCalc395" class="container">
+    <div class="row">
+        <div class="col hide-print">
+            <div class="calc395">
+                <div class="calc395-body">
+                    <p>{{summ}}</p>
+                    <p><input value="100000" name="amount" type="text" class="form-control -js-noempty -js-mdata"></p>
+                    <p>{{period}}</p>
+                    <div class="row">
+                        <div class="col">
+                            <input id="startDate" type="date" name="startDate" class="form-control -js-noempty -js-mdata" value="2023-11-03">
+                        </div>
+                        <div class="col">
+                            <input id="endDate" type="date" name="endDate" class="form-control -js-noempty -js-mdata" value="2024-02-15">
+                        </div>
+                    </div>
+                    <br>
+                    <div class="row">
+                        <div class="-js-block">
+                            <p>{{payments}}</p>
+                            <div class="-js-body" data-type="plus"></div>
+                            <p>
+                                <button type="button" name="add" class="btn btn-secondary">{{add}}</button>
+                            </p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="-js-block">
+                            <p>{{credits}}</p>
+                            <div class="-js-body" data-type="minus"></div>
+                            <p>
+                                <button type="button" name="add" class="btn btn-secondary">{{add}}</button>
+                            </p>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="text-end">
+                        <button onclick="validateAndCollect()" type="button" class="btn btn-success">{{success}}</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="calc_result_body">
+                <div class="row">
+                    <div id="calc_debt" class="col"></div>
+                    <div id="calc_penalty" class="col"></div>
+                </div>
+                <ul id="calc_result" class="row"></ul>
+                <div id="cacl395table"></div>
+            </div>
+            <div class="content hide-print">
+                <h3>{{text_0}}</h3>
+                <p>{{text_01}}</p>
+                <h3>{{text_1}}</h3>
+                <p>{{text_2}}</p>
+                <p>{{text_3}}</p>
+            </div>
+        </div>
+    </div>
+</div>

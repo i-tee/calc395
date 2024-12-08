@@ -1,0 +1,19 @@
+{
+    "name": "i-tee/calc395",
+    "description": "Расчёт процентов по статье 395 ГК РФ",
+    "type": "library",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Calc395\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "i-tee",
+            "email": "web@tee.su"
+        }
+    ],
+    "minimum-stability": "stable",
+    "require": {}
+}

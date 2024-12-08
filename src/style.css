@@ -1,0 +1,31 @@
+.calc395-body {
+    padding: 20px;
+    background: #f8f9fa;
+    margin: 20px;
+    border-radius: 20px;
+}
+.calc_result_body {
+    margin: 20px 0;
+}
+.container-print {
+    margin-bottom: 50px;
+}
+.add-pay-body p {
+    margin: 0px 0 5px 0px;
+    padding: 0 0 0 5px;
+}
+.add-pay-body {
+    background: #ededed;
+    padding: 10px;
+    border-radius: 8px;
+    margin: 0px 0 10px 0;
+}
+@media print {
+    .hide-print {
+        display: none;
+    }
+
+    .calc_result_body {
+        display: block !important;
+    }
+}
