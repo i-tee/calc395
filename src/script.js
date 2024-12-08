@@ -147,8 +147,6 @@ function startCalc(array){
         dataType: 'json',
         success: function(response) {
 
-            console.log(response);
-
             createResults(response);
             createTable('cacl395table');
             
