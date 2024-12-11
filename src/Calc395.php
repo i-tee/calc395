@@ -131,32 +131,6 @@ class Calc395
         // Цикл по дням
         while ($start < $end) {
 
-            $skipDay = false;
-
-            if($this->ignoring){  //Проверяем день на вхождение в интервалы исключений
-
-                foreach($this->ignoring as $ignore){
-
-                    $date1 = new DateTime($ignore['date1']);
-                    $date2 = new DateTime($ignore['date2']);
-
-                    if($start >= $date1 and $start <= $date2){
-
-                        $skipDay = true;
-
-                        break;
-
-                    }
-
-                }
-
-            }
-
-            if($skipDay){
-                $start->modify('+1 day');
-                continue;
-            }
-
             // Используем метод format для вывода даты
             $date = $start->format("Y-m-d");
 
@@ -184,7 +158,15 @@ class Calc395
              #rate - процентная ставца ЦБ РФ
 
             $day['date'] = $date;
-            $day['days'] = 1;   // На будущее, вдруг некоторые дни не будут учитываться, или будет применяться коэффициент
+
+            //var_dump($this->ignoreChekDay($date));
+
+            if($this->ignoreChekDay($date)){
+                $day['days'] = 0;
+            }else{
+                $day['days'] = 1;
+            }
+            
             $day['debt'] = $debt;
             $day['dy'] = date("L", strtotime($start->format("Y-m-d"))) ? 366 : 365;
             $day['rate'] = $this->findInterval($date);
@@ -305,7 +287,7 @@ class Calc395
                 $currentInterval = [
                     'from' => $entry['date'],
                     'to' => $entry['date'],
-                    'days' => 1, // Начинаем с 1 дня
+                    'days' => $entry['days'],
                     'debt' => $entry['debt'],
                     'dy' => $entry['dy'],
                     'rate' => $entry['rate']
@@ -317,14 +299,14 @@ class Calc395
             ) {
                 // Если параметры совпадают, продлеваем интервал
                 $currentInterval['to'] = $entry['date'];
-                $currentInterval['days']++;
+                $currentInterval['days'] += $entry['days'];
             } else {
                 // Сохраняем текущий интервал и начинаем новый
                 $result[] = $currentInterval;
                 $currentInterval = [
                     'from' => $entry['date'],
                     'to' => $entry['date'],
-                    'days' => 1, // Начинаем с 1 дня
+                    'days' => $entry['days'],
                     'debt' => $entry['debt'],
                     'dy' => $entry['dy'],
                     'rate' => $entry['rate']
@@ -384,7 +366,12 @@ class Calc395
 
         }
 
-        $mean_rate = round($mean_rate/$penalty_days, 2);
+        if($penalty_days == 0){
+            $mean_rate = $penalty_days;
+        }else{
+            $mean_rate = round($mean_rate/$penalty_days, 2);
+        }
+        
 
         $this->penalty_days = $penalty_days;
         $this->penalty_summ = $penalty_summ;
@@ -442,7 +429,8 @@ class Calc395
 
     }
 
-    static public function getLangJSON(){
+    static public function getLangJSON()
+    {
 
         echo '<script>';
 
@@ -452,10 +440,40 @@ class Calc395
         echo '</script>';
 
     }
-    static public function getLang(){
+
+    static public function getLang()
+    {
 
         $iniPath = __DIR__ . '/lang_ru.ini';
         return parse_ini_file($iniPath);
+
+    }
+
+    public function ignoreChekDay($date)
+    {
+
+        $check = false;
+
+        if($this->ignoring){  //Проверяем день на вхождение в интервалы исключений
+
+            $date = new DateTime($date);
+
+            foreach($this->ignoring as $ignore){
+
+                $date1 = new DateTime($ignore['date1']);
+                $date2 = new DateTime($ignore['date2']);
+
+                if($date >= $date1 and $date <= $date2){
+
+                    return true;
+
+                }
+
+            }
+
+        }
+
+        return $check;
 
     }
     
