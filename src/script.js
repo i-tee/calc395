@@ -45,16 +45,29 @@ function validateAndCollect() {
 
         $(this).find('.row').each(function(){
 
-            var date = $(this).find('input[type="date"]').val();
-            var summ = $(this).find('input[type="text"]').val();
-
             // Инициализируем changes[type][i], если оно не существует
             if (!changes[type][i]) {
                 changes[type][i] = {};  // Создаем объект для этого индекса, если еще не существует
             }
 
-            changes[type][i]['date'] = date;
-            changes[type][i]['summ'] = summ;
+            const count = $(this).find('input[type="date"]').length;
+            if(count == 2){ //Если 2 поля с типом date
+
+                var date1 = $(this).find('input[type="date"]').first().val();
+                var date2 = $(this).find('input[type="date"]').last().val();
+
+                changes[type][i]['date1'] = date1;
+                changes[type][i]['date2'] = date2;
+
+            }else{ // Иначе ищем date и summ
+
+                var date = $(this).find('input[type="date"]').val();
+                var summ = $(this).find('input[type="text"]').val();
+
+                changes[type][i]['date'] = date;
+                changes[type][i]['summ'] = summ;
+
+            }
 
             i++;
 
@@ -86,7 +99,13 @@ $('.-js-block button').on('click', function(){
     const col1 = document.createElement('div');
     col1.classList.add('col');
     const p1 = document.createElement('p');
-    p1.textContent = calcLangData.date;
+
+    if($(this).attr('class').includes('-js-type-ignore')){
+        p1.textContent = calcLangData.at;
+    }else{
+        p1.textContent = calcLangData.date;
+    }
+
     const input1 = document.createElement('input');
     input1.type = 'date';
     input1.classList.add('form-control', '-js-noempty');
@@ -96,9 +115,16 @@ $('.-js-block button').on('click', function(){
     const col2 = document.createElement('div');
     col2.classList.add('col');
     const p2 = document.createElement('p');
-    p2.textContent = calcLangData.summa;
     const input2 = document.createElement('input');
-    input2.type = 'text';
+
+    if($(this).attr('class').includes('-js-type-ignore')){
+        p2.textContent = calcLangData.to;
+        input2.type = 'date';
+    }else{
+        p2.textContent = calcLangData.summa;
+        input2.type = 'text';
+    }
+
     input2.classList.add('form-control', '-js-noempty');
     col2.appendChild(p2);
     col2.appendChild(input2);
@@ -136,6 +162,8 @@ function reformatDate(dateStr) {
 
 function startCalc(array){
 
+    console.log(array);
+
     $.ajax({
 
         url: window.location.href,
@@ -148,6 +176,9 @@ function startCalc(array){
         success: function(response) {
 
             createResults(response);
+
+            console.log(response);
+
             createTable('cacl395table');
             
             response.intervals.forEach((item, index) => {

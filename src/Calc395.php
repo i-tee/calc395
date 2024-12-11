@@ -17,6 +17,8 @@ class Calc395
 
     public $payments;
 
+    public $ignoring;
+
     public $loans;
 
     public $list;
@@ -129,6 +131,32 @@ class Calc395
         // Цикл по дням
         while ($start < $end) {
 
+            $skipDay = false;
+
+            if($this->ignoring){  //Проверяем день на вхождение в интервалы исключений
+
+                foreach($this->ignoring as $ignore){
+
+                    $date1 = new DateTime($ignore['date1']);
+                    $date2 = new DateTime($ignore['date2']);
+
+                    if($start >= $date1 and $start <= $date2){
+
+                        $skipDay = true;
+
+                        break;
+
+                    }
+
+                }
+
+            }
+
+            if($skipDay){
+                $start->modify('+1 day');
+                continue;
+            }
+
             // Используем метод format для вывода даты
             $date = $start->format("Y-m-d");
 
@@ -195,6 +223,30 @@ class Calc395
                 }
 
             }
+
+        }
+
+    }
+
+    public function setIgnoring(){
+
+        if(isset($this->data['changes']['ignoring'])){
+            return $this->ignoring = $this->data['changes']['ignoring'];
+        }else{
+            return false;
+        }
+        
+    }
+
+    public function getIgnoring(){
+
+        if(isset($this->ignoring) and count($this->ignoring)>0){
+
+            return $this->ignoring;
+
+        }else{
+
+            return false;
 
         }
 
@@ -297,6 +349,7 @@ class Calc395
         $this->endtDate = $data['endDate'];
         $this->setAmount($data['amount']);
         $this->setChanges();
+        $this->setIgnoring();
         $this->list = $this->BruteDays($data['startDate'],  $data['endDate']);
         $this->intervals = $this->mergeIntervals();
         $this->setResultIntervals();
@@ -354,6 +407,8 @@ class Calc395
 
         $data->startDate = $this->startDate;
         $data->endtDate = $this->endtDate;
+
+        $data->ignoring = $this->ignoring;
 
         return $data;
 
