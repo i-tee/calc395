@@ -162,7 +162,7 @@ function reformatDate(dateStr) {
 
 function startCalc(array){
 
-    console.log(array);
+    //console.log(array);
 
     $.ajax({
 
@@ -177,7 +177,7 @@ function startCalc(array){
 
             createResults(response);
 
-            console.log(response);
+            //console.log(response);
 
             createTable('cacl395table');
             
