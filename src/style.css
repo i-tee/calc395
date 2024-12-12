@@ -2,7 +2,8 @@
     padding: 20px;
     background: #f8f9fa;
     margin: 20px;
-    border-radius: 20px;
+    border-radius: 18px;
+    border: solid 2px #ededed;
 }
 .calc_result_body {
     margin: 20px 0;

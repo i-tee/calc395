@@ -69,6 +69,9 @@ function validateAndCollect() {
 
             }
 
+            var comment = $(this).find('input[type="text"]').last().val();
+            changes[type][i]['comment'] = comment;
+
             i++;
 
         });
@@ -130,12 +133,20 @@ $('.-js-block button').on('click', function(){
     col2.appendChild(input2);
 
     const col3 = document.createElement('div');
-    col3.classList.add('col', 'text-end');
+    col3.classList.add('col');
+    const p3 = document.createElement('p');
+    p3.textContent = calcLangData.comment;
+    const input3 = document.createElement('input');
+    input3.type = 'text';
+    input3.classList.add('form-control', '-js-noempty');
+
     const button = document.createElement('button');
     button.type = 'button';
     button.classList.add('btn-close');
     button.setAttribute('aria-label', 'Close');
     button.setAttribute('onclick', 'this.closest(\'.-js-row-remove\').remove()');
+    col3.appendChild(p3);
+    col3.appendChild(input3);
     col3.appendChild(button);
 
     // Добавление колонок в строку
@@ -162,7 +173,7 @@ function reformatDate(dateStr) {
 
 function startCalc(array){
 
-    //console.log(array);
+    console.log(array);
 
     $.ajax({
 
@@ -177,19 +188,19 @@ function startCalc(array){
 
             createResults(response);
 
-            //console.log(response);
+            console.log(response);
 
             createTable('cacl395table');
             
             response.intervals.forEach((item, index) => {
                 
                 var td = '<tr>';
+                td += '<td>' + formatCurrency(item['debt']) + '</td>';
                 td += '<td>' + reformatDate(item['from']) + ' - ' + reformatDate(item['to']) + '</td>';
                 td += '<td>' + item['days'] + '</td>';
                 td += '<td>' + item['dy'] + '</td>';
                 td += '<td>' + item['rate'] + '</td>';
-                td += '<td>' + formatCurrency(item['penalty']) + '</td>';
-                td += '<td>' + formatCurrency(item['debt']) + '</td>'; 
+                td += '<td class="text-end">' + formatCurrency(item['penalty']) + '</td>'; 
                 td += '</tr>';
 
                 $('#cacl395table').find('tbody').append(td);
@@ -237,7 +248,7 @@ function createResults(response){
     $('#calc_result').append(li);
 
     var li = $('<li></li>');
-    li.text(calcLangData.calc_result_period + ' ' + response.penalty_days);
+    li.text(calcLangData.calc_result_period + ' ' + response.penalty_days + ' / ' + calcLangData.calc_result_period_daysAll + ' ' + response.all_days);
     $('#calc_result').append(li);
 
     var hr = $('<hr id="chr">');
@@ -294,12 +305,12 @@ function createTable(containerId) {
     // Создаём строку заголовка
     const $headerRow = $("<tr>");
     const headers = [
+        calcLangData.debt,
         calcLangData.period,
         calcLangData.days,
         calcLangData.dy,
         calcLangData.rate,
-        calcLangData.penalty,
-        calcLangData.debt
+        calcLangData.penalty
     ];
   
     headers.forEach((headerText) => {

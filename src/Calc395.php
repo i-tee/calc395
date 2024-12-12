@@ -37,6 +37,8 @@ class Calc395
 
     public $penalty_days;
 
+    public $all_days;
+
     public $mean_rate;
 
     public function setAmount($amount)
@@ -98,14 +100,22 @@ class Calc395
         usort($rates, fn($a, $b) => strtotime($a['endDate']) - strtotime($b['endDate']));
     }
 
-    public function calculatePenaltyInterest($debt, $rate, $daysOverdue, $daysInYear): float 
+    public function calculatePenaltyInterest($debt, $rate, $daysOverdue, $daysInYear, $accrual = true): float 
     {
-    
-        // Преобразуем ставку в долю
-        $rateDecimal = $rate / 100;
-    
-        // Расчет процентов
-        $interest = ($debt * $rateDecimal / $daysInYear) * $daysOverdue;
+
+        if($accrual){
+
+            // Преобразуем ставку в долю
+            $rateDecimal = $rate / 100;
+        
+            // Расчет процентов
+            $interest = ($debt * $rateDecimal / $daysInYear) * $daysOverdue;
+
+        }else{
+
+            $interest = 0;
+
+        }
     
         return round($interest, 2); // Округление до двух знаков
 
@@ -159,12 +169,14 @@ class Calc395
 
             $day['date'] = $date;
 
-            //var_dump($this->ignoreChekDay($date));
-
-            if($this->ignoreChekDay($date)){
-                $day['days'] = 0;
+            if($comment = $this->ignoreChekDay($date)){    // Проверяет, день находится в периоде-исключении или нет
+                $day['days'] = 1;           //Коэфициент начисления в день
+                $day['accrual'] = false;    //Начисляются проценты или нет
+                $day['comment'] = $comment;    //Начисляются проценты или нет
             }else{
-                $day['days'] = 1;
+                $day['days'] = 1;           //Коэфициент начисления в день
+                $day['accrual'] = true;     //Начисляются проценты или нет
+                $day['comment'] = $comment;     //Начисляются проценты или нет
             }
             
             $day['debt'] = $debt;
@@ -285,6 +297,8 @@ class Calc395
             if ($currentInterval === null) {
                 // Инициализация первого интервала
                 $currentInterval = [
+                    'comment' => $entry['comment'],
+                    'accrual' => $entry['accrual'],
                     'from' => $entry['date'],
                     'to' => $entry['date'],
                     'days' => $entry['days'],
@@ -293,6 +307,8 @@ class Calc395
                     'rate' => $entry['rate']
                 ];
             } elseif (
+                $entry['comment'] === $currentInterval['comment'] &&
+                $entry['accrual'] === $currentInterval['accrual'] &&
                 $entry['debt'] === $currentInterval['debt'] &&
                 $entry['dy'] === $currentInterval['dy'] &&
                 $entry['rate'] === $currentInterval['rate']
@@ -304,6 +320,8 @@ class Calc395
                 // Сохраняем текущий интервал и начинаем новый
                 $result[] = $currentInterval;
                 $currentInterval = [
+                    'comment' => $entry['comment'],
+                    'accrual' => $entry['accrual'],
                     'from' => $entry['date'],
                     'to' => $entry['date'],
                     'days' => $entry['days'],
@@ -343,6 +361,7 @@ class Calc395
 
         $penalty_summ = 0;  #сумма процентов
         $penalty_days = 0;  #дней просрочки
+        $all_days = 0;  #дней дней всего
 
         $mean_rate = 0;     #средняя ставка
 
@@ -354,10 +373,18 @@ class Calc395
 
         foreach($intervals as $interval){
 
-            $interval['penalty'] = $this->calculatePenaltyInterest($interval['debt'], $interval['rate'], $interval['days'], $interval['dy']);
+            $interval['penalty'] = $this->calculatePenaltyInterest($interval['debt'], $interval['rate'], $interval['days'], $interval['dy'], $interval['accrual']);
 
             $penalty_summ += $interval['penalty'];
-            $penalty_days += $interval['days'];
+            
+            if($interval['accrual']){
+                $penalty_days += $interval['days'];
+            }else{
+                $penalty_days += 0;
+            }
+
+            $all_days += $interval['days'];
+            
             $mean_rate += $interval['rate']*$interval['days'];
 
             $intervalsPenalty[] = $interval;
@@ -378,6 +405,7 @@ class Calc395
         $this->mean_rate = $mean_rate;
         $this->intervalsPenalty = $intervalsPenalty;
         $this->final_amount = $final_amount;
+        $this->all_days = $all_days;
 
     }
 
@@ -396,6 +424,8 @@ class Calc395
         $data->endtDate = $this->endtDate;
 
         $data->ignoring = $this->ignoring;
+        $data->all_days = $this->all_days;
+        $data->changes = $this->changes;
 
         return $data;
 
@@ -465,7 +495,7 @@ class Calc395
 
                 if($date >= $date1 and $date <= $date2){
 
-                    return true;
+                    return $ignore['comment'];
 
                 }
 
