@@ -173,7 +173,7 @@ function reformatDate(dateStr) {
 
 function startCalc(array){
 
-    console.log(array);
+    //console.log(array);
 
     $.ajax({
 
@@ -188,13 +188,44 @@ function startCalc(array){
 
             createResults(response);
 
-            console.log(response);
+            //console.log(response);
 
             createTable('cacl395table');
             
             response.intervals.forEach((item, index) => {
-                
+
+                var checkChagne = checkChangeFind(item['from'], response);
+
                 var td = '<tr>';
+
+                let tr_style, tr_text, tr_creat;
+
+                if (!item['accrual']) {
+                    tr_style = "text-secondary";
+                    tr_text = `${calcLangData.ignore_text + ', ' + item['comment']}`;
+                    tr_creat = true;
+                } else {
+                    tr_style = "";
+                    tr_text = "";
+                    tr_creat = false;
+                }
+
+                if(checkChagne){
+
+                    if(checkChagne.type){
+                        var styleclass = 'text-success';
+                        var paymentText = calcLangData.pay_text;
+                    }else{
+                        var styleclass = 'text-warning';
+                        var paymentText = calcLangData.loan_text;
+                    }
+
+                    td += `<td class="${styleclass}">${formatCurrency(checkChagne.summ)}</td>`;
+                    td += `<td colspan="5">${reformatDate(checkChagne.date)} - ${paymentText}: ${checkChagne.comment}</td>`;
+                    td += '</tr><tr>';
+
+                }
+
                 td += '<td>' + formatCurrency(item['debt']) + '</td>';
                 td += '<td>' + reformatDate(item['from']) + ' - ' + reformatDate(item['to']) + '</td>';
                 td += '<td>' + item['days'] + '</td>';
@@ -202,6 +233,13 @@ function startCalc(array){
                 td += '<td>' + item['rate'] + '</td>';
                 td += '<td class="text-end">' + formatCurrency(item['penalty']) + '</td>'; 
                 td += '</tr>';
+
+                if(tr_creat){
+                    tr_text = truncateString(tr_text, 65);
+                    td += `<tr class="${tr_style}">`;
+                    td += `<td class="text-end" colspan="6">${tr_text} <i class="bi bi-arrow-up-right"></i>       </td>`;
+                    td += '</tr>';
+                }
 
                 $('#cacl395table').find('tbody').append(td);
 
@@ -214,6 +252,44 @@ function startCalc(array){
 
     });
 
+}
+
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Enter') {
+        validateAndCollect();
+    }
+});
+
+window.onload = function() {
+    // Получаем текущую дату
+    const today = new Date();
+
+    // Дата начала текущего года (1 января)
+    const startDate = new Date(today.getFullYear(), 0, 1);
+    const formattedStartDate = formatDateYMD(startDate);
+
+    // Сегодняшняя дата
+    const formattedEndDate = formatDateYMD(today);
+
+    // Заполняем инпуты значениями
+    document.getElementById('startDate').value = formattedStartDate;
+    document.getElementById('endDate').value = formattedEndDate;
+};
+
+// Функция для форматирования даты в формат Y-m-d
+function formatDateYMD(date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // Месяц от 0 до 11, добавляем 1
+    const day = String(date.getDate()).padStart(2, '0'); // День с ведущим нулем
+    return `${year}-${month}-${day}`;
+}
+
+
+function truncateString(str, col) {
+    if (str.length > col) {
+        return str.slice(0, col) + '...';
+    }
+    return str;
 }
 
 function createResults(response){
@@ -338,4 +414,21 @@ function formatCurrency(number) {
         currency: 'RUB'
     }).format(number);
 
+}
+
+function checkChangeFind(date, data) {
+
+    if (!Array.isArray(data.changes)) {
+        return false; // Если data.changes не массив, возвращаем false
+    }
+
+    for (const change of data.changes) {
+        if (change.date === date) {
+            // Устанавливаем стиль в зависимости от значения summ
+            change.type = change.summ >= 0 ? false : true; // Положительный или отрицательный платеж
+            return change;
+        }
+    }
+
+    return false; // Если ничего не найдено, возвращаем false
 }
