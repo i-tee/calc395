@@ -195,10 +195,10 @@ if(isset($_GET['ajax']) and $_GET['ajax'] == true){     # Если запрос 
     # Не забываем подлючить jQuery, она нужна для скрипта калькулятора
     // <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 
-    $calc->::getCalcStyle();    # Выведет содержимое style.css
-    $calc->::getCalcTmplHtml(); # Выведет содержимое calccontainer.html
-    $calc->::getLangJSON();     # Создаст глобальную переменную в js calcLangData с языковыми переменными
-    $calc->::getScriptTag();    # Выведет содержимое script.js
+    $calc::getCalcStyle();    # Выведет содержимое style.css
+    $calc::getCalcTmplHtml(); # Выведет содержимое calccontainer.html
+    $calc::getLangJSON();     # Создаст глобальную переменную в js calcLangData с языковыми переменными
+    $calc::getScriptTag();    # Выведет содержимое script.js
 
 }
 
