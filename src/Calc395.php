@@ -169,14 +169,16 @@ class Calc395
 
             $day['date'] = $date;
 
-            if($comment = $this->ignoreChekDay($date)){    // Проверяет, день находится в периоде-исключении или нет
+            $comment = $this->ignoreChekDay($date);
+
+            if(!($comment === false)){    // Проверяет, день находится в периоде-исключении или нет
                 $day['days'] = 1;           //Коэфициент начисления в день
                 $day['accrual'] = false;    //Начисляются проценты или нет
-                $day['comment'] = $comment;    //Начисляются проценты или нет
+                $day['comment'] = $comment;    
             }else{
                 $day['days'] = 1;           //Коэфициент начисления в день
                 $day['accrual'] = true;     //Начисляются проценты или нет
-                $day['comment'] = $comment;     //Начисляются проценты или нет
+                $day['comment'] = $comment;
             }
             
             $day['debt'] = $debt;
@@ -258,6 +260,7 @@ class Calc395
             foreach($this->data['changes']['plus'] as $pay){
 
                 $pay['summ'] = -$pay['summ'];
+                $pay['type'] = true;
                 $changes[] = $pay;
 
             }
@@ -271,6 +274,7 @@ class Calc395
             foreach($this->data['changes']['minus'] as $loan){
 
                 $loan['summ'] = (int)$loan['summ'];
+                $loan['type'] = false;
                 $changes[] = $loan;
 
             }

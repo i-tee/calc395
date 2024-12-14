@@ -142,7 +142,7 @@ $('.-js-block button').on('click', function(){
 
     const button = document.createElement('button');
     button.type = 'button';
-    button.classList.add('btn-close');
+    button.classList.add('btn-close', 'btn-close-css');
     button.setAttribute('aria-label', 'Close');
     button.setAttribute('onclick', 'this.closest(\'.-js-row-remove\').remove()');
     col3.appendChild(p3);
@@ -171,9 +171,9 @@ function reformatDate(dateStr) {
     return `${day}.${month}.${year}`;
 }
 
-function startCalc(array){
+function startCalc(array){  //*********************************************************************************************************************** */
 
-    //console.log(array);
+    console.log(array);
 
     $.ajax({
 
@@ -188,7 +188,7 @@ function startCalc(array){
 
             createResults(response);
 
-            //console.log(response);
+            console.log(response);
 
             createTable('cacl395table');
             
@@ -196,49 +196,71 @@ function startCalc(array){
 
                 var checkChagne = checkChangeFind(item['from'], response);
 
-                var td = '<tr>';
-
-                let tr_style, tr_text, tr_creat;
-
-                if (!item['accrual']) {
-                    tr_style = "text-secondary";
-                    tr_text = `${calcLangData.ignore_text + ', ' + item['comment']}`;
-                    tr_creat = true;
-                } else {
-                    tr_style = "";
-                    tr_text = "";
-                    tr_creat = false;
-                }
-
                 if(checkChagne){
 
-                    if(checkChagne.type){
-                        var styleclass = 'text-success';
-                        var paymentText = calcLangData.pay_text;
-                    }else{
-                        var styleclass = 'text-warning';
-                        var paymentText = calcLangData.loan_text;
-                    }
+                    console.log(checkChagne);
 
-                    td += `<td class="${styleclass}">${formatCurrency(checkChagne.summ)}</td>`;
-                    td += `<td colspan="5">${reformatDate(checkChagne.date)} - ${paymentText}: ${checkChagne.comment}</td>`;
-                    td += '</tr><tr>';
+                    Object.keys(checkChagne).forEach(key => {
+
+                        const entry = checkChagne[key];
+
+                        console.log(entry);
+
+                        if(entry.type){
+
+                            var tr_style = 'text-success';
+                            var paymentText = calcLangData.pay_text;
+
+                        }else{
+
+                            var tr_style = 'text-warning';
+                            var paymentText = calcLangData.loan_text;
+
+                        }
+
+                        var td = `<tr class="${tr_style}">`;
+                        td += '<td>' + formatCurrency(entry.summ) + '</td>';
+                        td += `<td colspan="5">${reformatDate(entry.date)} - ${paymentText}: ${entry.comment}</td>`;
+                        td += '</tr>';
+
+                        $('#cacl395table').find('tbody').append(td);
+
+                    });
 
                 }
 
-                td += '<td>' + formatCurrency(item['debt']) + '</td>';
-                td += '<td>' + reformatDate(item['from']) + ' - ' + reformatDate(item['to']) + '</td>';
-                td += '<td>' + item['days'] + '</td>';
-                td += '<td>' + item['dy'] + '</td>';
-                td += '<td>' + item['rate'] + '</td>';
-                td += '<td class="text-end">' + formatCurrency(item['penalty']) + '</td>'; 
-                td += '</tr>';
+                if (!item['accrual']) {
+                    
+                    let tr_style;
 
-                if(tr_creat){
-                    tr_text = truncateString(tr_text, 65);
-                    td += `<tr class="${tr_style}">`;
-                    td += `<td class="text-end" colspan="6">${tr_text} <i class="bi bi-arrow-up-right"></i>       </td>`;
+                    tr_style = 'text-secondary fst-italic';
+                    item['days'] = `(дней: ${item['days']})`;
+
+                    item['comment'] = item['comment'] ? `${truncateString(item['comment'], 120)}` : false;
+
+                    var td = `<tr class="${tr_style}">`;
+                    td += '<td>' + formatCurrency(item['debt']) + '</td>';
+                    td += '<td>' + reformatDate(item['from']) + ' - ' + reformatDate(item['to']) + '</td>';
+                    td += '<td colspan="4">' + calcLangData.ignore_text + ' ' + item['days'] + '</td>';
                     td += '</tr>';
+
+                    if(item['comment']){
+                        td += `<tr class="${tr_style}">`;
+                        td += `<td colspan="6">${item['comment']}</td>`;
+                        td += '</tr>';
+                    }
+
+                } else {
+
+                    var td = '<tr>';
+                    td += '<td>' + formatCurrency(item['debt']) + '</td>';
+                    td += '<td style="min-width: 140px;">' + reformatDate(item['from']) + ' - ' + reformatDate(item['to']) + '</td>';
+                    td += '<td>' + item['days'] + '</td>';
+                    td += '<td>' + item['dy'] + '</td>';
+                    td += '<td>' + item['rate'] + '</td>';
+                    td += '<td class="text-end">' + formatCurrency(item['penalty']) + '</td>'; 
+                    td += '</tr>';
+
                 }
 
                 $('#cacl395table').find('tbody').append(td);
@@ -418,17 +440,23 @@ function formatCurrency(number) {
 
 function checkChangeFind(date, data) {
 
+    let daychanges = {};
+    let i = 0;
+
     if (!Array.isArray(data.changes)) {
         return false; // Если data.changes не массив, возвращаем false
     }
 
     for (const change of data.changes) {
         if (change.date === date) {
-            // Устанавливаем стиль в зависимости от значения summ
-            change.type = change.summ >= 0 ? false : true; // Положительный или отрицательный платеж
-            return change;
+            daychanges[i++] = change;
         }
     }
 
-    return false; // Если ничего не найдено, возвращаем false
+    if(i > 0){
+        return daychanges;
+    }else{
+        return false;
+    }
+    
 }

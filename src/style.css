@@ -30,3 +30,14 @@
         display: block !important;
     }
 }
+.btn-close-css::before {
+    content: " ";
+}
+.btn-close-css {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+}
+.add-pay-body div {
+    position: relative;
+}
